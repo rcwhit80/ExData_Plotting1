@@ -1,0 +1,42 @@
+## This script is for the week 1 assignment of the Exploratory
+## Data Analysis course
+
+## Load packages required
+## Install dplyr
+library(data.table)
+library(dplyr)
+library(lubridate)
+
+## Download the raw data file
+if(!file.exists("./data")){dir.create("./data")}
+fileUrl <- "https://d396qusza40orc.cloudfront.net/exdata%2Fdata%2Fhousehold_power_consumption.zip"
+download.file(fileUrl, destfile="./data/data.zip")
+
+## Unzip the file
+unzip("./data/data.zip")
+
+##read the files into variables 
+## hpc is created by reading the household_power_consumption.txt file extracted
+hpc <- fread(input="./household_power_consumption.txt")
+
+## convert character variables to numeric and date
+hpc$Global_active_power <- as.numeric(hpc$Global_active_power)
+hpc$Date <- as.Date(hpc$Date, "%d/%m/%Y")
+data <- subset(hpc, hpc$Date == "2007-02-01" | hpc$Date == "2007-02-02", na.rm = TRUE)
+data$Date <- with (data, ymd(Date)+hms(Time))
+data$Sub_metering_1 <- as.numeric(data$Sub_metering_1)
+data$Sub_metering_2 <- as.numeric(data$Sub_metering_2)
+data$Global_reactive_power <- as.numeric(data$Global_reactive_power)
+data$Voltage <- as.numeric(data$Voltage)
+
+##plot4
+png(filename = "plot4.png")
+par(mfrow = c(2,2))
+with(data, plot(Date, Global_active_power, type = "l", xlab = "", ylab = "Global Active Power", cex.axis = 1.0, cex.lab = 1.0))
+with(data, plot(Date, Voltage, type = "l", xlab = "datetime", ylab = "Voltage", cex.axis = 1.0, cex.lab = 1.0))
+with(data, plot(c(Date), c(Sub_metering_1), type = "l", xlab = "", ylab = "Energy sub metering", cex.axis = 1.0, cex.lab = 1.0))
+lines(data$Date, data$Sub_metering_2, col = "red")
+lines(data$Date, data$Sub_metering_3, col = "blue")
+legend("topright", inset = 0.01, legend = c("Sub_metering_1", "Sub_metering_2", "Sub_metering_3"), box.lty = 0, lty = c(1,1,1), col = c("black", "red", "blue"), cex = 0.9)
+with(data, plot(Date, Global_reactive_power, type = "l", xlab = "datetime", ylab = "Global_reactive_power", cex.axis = 1.0, cex.lab = 1.0))
+dev.off()
